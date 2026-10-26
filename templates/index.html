@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#183d32">
+  <title>BiteBack — Eat Smart. Spend Less. Waste Nothing.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <aside class="sidebar" id="appSidebar">
+    <button class="sidebar-toggle" id="sidebarToggle" type="button" aria-label="Collapse sidebar" title="Collapse sidebar"><img src="{{ url_for('static', filename='arrow-shrink.png') }}" alt=""></button>
+    <a class="brand" href="/" aria-label="BiteBack home"><img class="sidebar-logo theme-logo" src="{{ url_for('static', filename='biteback-logo-small.png') }}" alt="BiteBack" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex'"><span class="brand-fallback" style="display:none">🥑 BiteBack</span></a>
+    <div class="nav-label">WORKSPACE</div>
+    <nav class="nav">
+      <button class="nav-item active" data-view="overview"><span>◫</span> Overview</button>
+      <button class="nav-item" data-view="pantry"><span>▦</span> My Pantry <span class="nav-count" id="navFoodCount">0</span></button>
+      <button class="nav-item" data-view="budget"><span>◉</span> Budget Rescue</button>
+      <button class="nav-item" data-view="impact"><span>↗</span> My Impact</button>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="tip-card"><span class="tip-icon">✳</span><strong>Small steps add up.</strong><p>Every ingredient used is money and food saved.</p></div>
+      <button class="profile profile-open" id="profileOpen" type="button" aria-label="Edit profile">
+        <div class="avatar">{{ (user_name or 'U')[:1]|upper }}</div><div class="profile-summary"><strong>{{ user_name or 'Your kitchen' }}</strong><small>Edit profile</small></div><span class="profile-dot"></span>
+      </button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="mobile-brand"><strong>🥑 BiteBack</strong></div>
+      <div class="breadcrumb">Workspace <span>/</span> <strong id="breadcrumbTitle">Overview</strong></div>
+      <div class="top-actions"><span class="today" id="todayLabel"></span><button class="icon-button" id="refreshBtn" title="Refresh data" aria-label="Refresh">↻</button><button class="icon-button" id="appSettingsOpen" title="Display settings" aria-label="Display settings">⚙</button><form method="post" action="{{ url_for('logout') }}"><button class="icon-button" title="Log out" aria-label="Log out">↪</button></form><div class="avatar small-avatar">{{ (user_name or 'U')[:1]|upper }}</div></div>
+    </header>
+
+    <section class="page active" id="view-overview">
+      <div class="welcome-row">
+        <div><p class="eyebrow">YOUR KITCHEN, YOUR RULES</p><h1>Make every bite <em>count.</em></h1><p class="subhead">Spend less on food, use what you have, and waste a little less every day.</p></div>
+        <div class="hero-art" aria-hidden="true"><span class="sun"></span><span class="leaf leaf-one"></span><span class="leaf leaf-two"></span><span class="plate"><span>🍃</span></span><span class="spark spark-one">✦</span><span class="spark spark-two">✳</span></div>
+      </div>
+      <div class="stat-grid">
+        <article class="stat-card"><div class="stat-top"><span>Ingredients in pantry</span><span class="stat-icon green">▦</span></div><div class="stat-value" id="statPantry">—</div><div class="stat-foot">Ready to put to good use</div></article>
+        <article class="stat-card"><div class="stat-top"><span>Use soon</span><span class="stat-icon amber">◷</span></div><div class="stat-value" id="statUrgent">— <small>items</small></div><div class="stat-foot">Check these ingredients first</div></article>
+        <article class="stat-card"><div class="stat-top"><span>Estimated value used</span><span class="stat-icon green">↗</span></div><div class="stat-value">RM <span id="statSaved">0.00</span></div><div class="stat-foot">Value of ingredients marked used</div></article>
+        <article class="stat-card"><div class="stat-top"><span>Estimated value wasted</span><span class="stat-icon rose">⌁</span></div><div class="stat-value">RM <span id="statWasted">0.00</span></div><div class="stat-foot">Track it honestly, improve over time</div></article>
+      </div>
+
+      <div class="content-grid">
+        <section class="panel pantry-panel">
+          <div class="panel-heading"><div><p class="eyebrow">YOUR INGREDIENTS</p><h2>Use these first</h2></div><button class="text-button" data-go="pantry">View pantry <span>→</span></button></div>
+          <div id="urgentFoods" class="food-list"><div class="empty-state">Loading your pantry…</div></div>
+          <button class="outline-button full-button" data-go="pantry">＋ Add ingredients</button>
+        </section>
+        <section class="panel rescue-panel">
+          <div class="panel-heading"><div><p class="eyebrow">A LITTLE HELP</p><h2>Need a meal idea?</h2></div><span class="mini-illustration">✳</span></div>
+          <p class="panel-copy">Tell BiteBack what you have and your budget. Get a practical plan that puts your ingredients first.</p>
+          <div class="budget-preview"><div><span>Example weekly budget</span><strong>RM 30</strong></div><span class="budget-line"><i></i></span><small>Start with your own budget</small></div>
+          <button class="primary-button full-button" data-go="budget">Plan my meals <span>→</span></button>
+          <div class="privacy-note"><span>✦</span> Meal costs are estimates, not live store prices.</div>
+        </section>
+      </div>
+      <section class="panel activity-panel">
+        <div class="panel-heading"><div><p class="eyebrow">YOUR PROGRESS</p><h2>Recent kitchen activity</h2></div><button class="text-button" data-go="impact">View impact <span>→</span></button></div>
+        <div id="recentActivity" class="activity-list"><div class="empty-state">Your activity will appear here when you use or waste an ingredient.</div></div>
+      </section>
+    </section>
+
+    <section class="page" id="view-pantry">
+      <div class="page-heading"><div><p class="eyebrow">KNOW WHAT YOU HAVE</p><h1>My pantry<span class="heading-dot">.</span></h1><p class="subhead">A little planning helps every ingredient go further.</p></div><div class="pantry-heading-actions"><button class="primary-button" id="openAddModal">＋ Add ingredient</button></div></div>
+      <div class="pantry-toolbar"><div class="search-wrap"><span>⌕</span><input id="foodSearch" type="search" placeholder="Search ingredients…"></div><select id="categoryFilter" aria-label="Filter category"><option value="all">All categories</option><option>Vegetables</option><option>Fruit</option><option>Protein</option><option>Grains</option><option>Dairy</option><option>Other</option></select><select id="sortFilter" aria-label="Sort ingredients"><option value="expiry">Expiry: soonest first</option><option value="name">Name: A–Z</option></select></div>
+      <div id="pantryGrid" class="pantry-grid"></div>
+    </section>
+
+    <section class="page" id="view-budget">
+      <div class="page-heading"><div><p class="eyebrow">MAKE YOUR MONEY GO FURTHER</p><h1>Budget rescue<span class="heading-dot">.</span></h1><p class="subhead">Build a meal plan around what you already have.</p></div></div>
+      <div class="budget-layout">
+        <section class="panel budget-form-panel">
+          <div class="panel-heading"><div><p class="eyebrow">YOUR PLAN</p><h2>Set your limits</h2></div><span class="large-icon">◉</span></div>
+          <form id="mealPlanForm">
+            <label for="budgetInput">Extra food budget (RM)</label><div class="money-input"><span>RM</span><input id="budgetInput" type="number" min="0" max="1000" step="0.50" value="30" required></div>
+            <label for="daysInput">Plan length</label><div class="segmented" id="daysSegments"><button type="button" data-days="3" class="selected">3 days</button><button type="button" data-days="5">5 days</button><button type="button" data-days="7">7 days</button></div>
+            <label for="preferencesInput">Food preferences or limitations <span class="optional">Optional</span></label><textarea id="preferencesInput" rows="3" placeholder="e.g. no spicy food, vegetarian, only have a rice cooker…"></textarea>
+            <div class="form-tip"><span>✦</span><p>BiteBack prioritises your existing ingredients and items that need using soon.</p></div>
+            <button class="primary-button full-button" type="submit" id="generatePlanBtn">✦ Generate my plan</button>
+          </form>
+        </section>
+        <section class="panel plan-panel">
+          <div class="panel-heading"><div><p class="eyebrow">COOK WHAT YOU HAVE</p><h2>Your meal plan</h2></div><span class="ai-badge">✦ AI ASSISTED</span></div>
+          <div id="mealPlanOutput" class="meal-plan-output"><div class="plan-placeholder"><div class="plan-plate">🥗</div><h3>Your next good meal starts here.</h3><p>Set your budget and preferences, then generate a plan built around your pantry.</p></div></div>
+        </section>
+      </div>
+    </section>
+
+    <section class="page" id="view-impact">
+      <div class="page-heading"><div><p class="eyebrow">SMALL STEPS, REAL PROGRESS</p><h1>Your impact<span class="heading-dot">.</span></h1><p class="subhead">Track what you use, what you waste, and the value behind it.</p></div></div>
+      <div class="impact-highlight"><div><p class="eyebrow">ESTIMATED INGREDIENT VALUE USED</p><div class="impact-big">RM <span id="impactSaved">0.00</span></div><p>Every ingredient you use is a chance to avoid waste.</p></div><div class="impact-symbol">↗</div></div>
+      <div class="stat-grid impact-stats">
+        <article class="stat-card"><div class="stat-top"><span>Items used</span><span class="stat-icon green">✓</span></div><div class="stat-value" id="impactUsedCount">0</div><div class="stat-foot">Recorded as used</div></article>
+        <article class="stat-card"><div class="stat-top"><span>Items wasted</span><span class="stat-icon rose">⌁</span></div><div class="stat-value" id="impactWastedCount">0</div><div class="stat-foot">Recorded as wasted</div></article>
+        <article class="stat-card"><div class="stat-top"><span>Value wasted</span><span class="stat-icon amber">RM</span></div><div class="stat-value">RM <span id="impactWastedValue">0.00</span></div><div class="stat-foot">Estimated ingredient value</div></article>
+        <article class="stat-card"><div class="stat-top"><span>Active ingredients</span><span class="stat-icon green">▦</span></div><div class="stat-value" id="impactActive">0</div><div class="stat-foot">Still in your pantry</div></article>
+      </div>
+      <section class="panel activity-panel"><div class="panel-heading"><div><p class="eyebrow">YOUR HISTORY</p><h2>Ingredient activity</h2></div></div><div id="impactActivity" class="activity-list"></div></section>
+      <p class="fine-print">Values are estimates based on the ingredient value you enter. They are not verified cash savings or a measurement of environmental impact.</p>
+    </section>
+
+    <footer class="footer"><span>Copyright © 2026 BiteBack</span></footer>
+  </main>
+
+  <div class="modal-backdrop" id="foodModal" aria-hidden="true">
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal-heading"><div><p class="eyebrow">ADD TO YOUR PANTRY</p><h2 id="modalTitle">New ingredient</h2></div><button class="icon-button" id="closeModal" aria-label="Close">×</button></div>
+      <div class="ingredient-picker" id="ingredientPicker">
+        <div class="ingredient-picker-heading"><div><h3>Choose from common ingredients</h3><p>Tap an item to fill in the form below, then adjust the details.</p></div></div>
+        <input id="ingredientSearch" class="ingredient-search" type="search" placeholder="Search ingredients…" aria-label="Search common ingredients">
+        <div class="ingredient-menu" id="ingredientMenu" aria-label="Common ingredients"></div>
+        <p class="ingredient-manual-hint">Can't find it? Enter your ingredient manually below.</p>
+      </div>
+      <form id="foodForm">
+        <label for="foodName">Ingredient name *</label><input id="foodName" name="name" required maxlength="100" placeholder="e.g. Eggs">
+        <div class="form-row"><div><label for="foodQuantity">Quantity *</label><input id="foodQuantity" type="number" min="0.01" step="0.01" value="1" required></div><div><label for="foodUnit">Unit</label><select id="foodUnit"><option>item</option><option>pcs</option><option>g</option><option>kg</option><option>ml</option><option>L</option><option>pack</option><option>bunch</option><option>blocks</option><option>can</option><option>loaf</option><option>box</option><option>jar</option><option>bulb</option><option>head</option><option>cup</option></select></div></div>
+        <label for="foodCategory">Category</label><select id="foodCategory"><option>Vegetables</option><option>Fruit</option><option>Protein</option><option>Grains</option><option>Dairy</option><option>Other</option></select>
+        <div class="form-row"><div><label for="purchaseDate">Purchase date</label><input id="purchaseDate" type="date"></div><div><label for="expiryDate">Best-before / expiry date</label><input id="expiryDate" type="date"></div></div>
+        <label for="foodValue">Estimated total value (RM)</label><input id="foodValue" type="number" min="0" step="0.10" value="0">
+        <p class="form-hint">Enter the approximate value of this quantity. Dates are reminders and do not determine food safety by themselves.</p>
+        <div class="modal-actions"><button type="button" class="outline-button" id="cancelModal">Cancel</button><button type="submit" class="primary-button" id="saveFoodBtn">Save ingredient</button></div>
+      </form>
+    </section>
+  </div>
+  <div class="settings-backdrop profile-backdrop" id="profileBackdrop" role="dialog" aria-modal="true" aria-labelledby="profileTitle">
+    <section class="settings-panel profile-panel">
+      <div class="settings-head"><div><p class="eyebrow">YOUR ACCOUNT</p><h2 id="profileTitle">Edit profile</h2><p class="settings-note">Keep your personal details up to date.</p></div><button id="profileClose" class="icon-button" type="button" aria-label="Close profile">×</button></div>
+      <form id="profileForm" class="profile-form">
+        <label for="profile-name">Full name *</label><input id="profile-name" name="name" required minlength="2" maxlength="100" autocomplete="name">
+        <label for="profile-email">Email address *</label><input id="profile-email" name="email" type="email" required maxlength="254" autocomplete="email">
+        <div class="form-row"><div><label for="profile-age">Age</label><input id="profile-age" name="age" type="number" min="1" max="120" placeholder="Optional"></div><div><label for="profile-gender">Gender</label><select id="profile-gender" name="gender"><option value="">Prefer not to say</option><option>Female</option><option>Male</option><option>Non-binary</option><option>Self-describe</option></select></div></div>
+        <label for="profile-phone">Phone (optional)</label><input id="profile-phone" name="phone" type="tel" maxlength="40" autocomplete="tel">
+        <label for="profile-dietary_preferences">Dietary preferences or allergies (optional)</label><textarea id="profile-dietary_preferences" name="dietary_preferences" rows="3" maxlength="300" placeholder="e.g. vegetarian, peanut allergy"></textarea>
+        <div class="modal-actions"><button type="button" class="secondary-button" id="profileCancel">Cancel</button><button type="submit" class="primary-button">Save profile</button></div>
+      </form>
+    </section>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div><div class="settings-backdrop" id="settingsBackdrop"><section class="settings-panel"><div class="settings-head"><div><p class="eyebrow">MAKE IT YOURS</p><h2>Display settings</h2></div><button id="settingsClose" class="icon-button">×</button></div><label for="themeChoice">Appearance</label><select id="themeChoice"><option value="light">Light mode</option><option value="dark">Dark mode</option></select><label for="fontSizeRange">Font size</label><input id="fontSizeRange" class="font-size-range" type="range" min="0" max="2" step="1" value="1" aria-label="Adjust font size"><div class="font-range-labels"><span>Small</span><span>Default</span><span>Large</span></div><input id="fontChoice" type="hidden" value="normal"><label for="densityChoice">Layout density</label><select id="densityChoice"><option value="comfortable">Comfortable</option><option value="compact">Compact</option></select><p class="settings-note">Display preferences are saved on this device.</p></section></div>
+  <div class="confirm-backdrop" id="confirmBackdrop" aria-hidden="true">
+    <section class="confirm-dialog" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle" aria-describedby="confirmMessage">
+      <div class="confirm-icon" id="confirmIcon" aria-hidden="true">✓</div>
+      <p class="eyebrow" id="confirmEyebrow">QUICK CONFIRMATION</p>
+      <h2 id="confirmTitle">Mark as used?</h2>
+      <p class="confirm-message" id="confirmMessage">This will update your pantry and impact statistics.</p>
+      <div class="confirm-food" id="confirmFood" hidden>
+        <span class="confirm-food-emoji" id="confirmFoodEmoji">🍌</span>
+        <span class="confirm-food-details"><strong id="confirmFoodName">Bananas</strong><small id="confirmFoodMeta">4 pcs · Fruit</small></span>
+      </div>
+      <div class="confirm-actions">
+        <button type="button" class="confirm-cancel" id="confirmCancel">Cancel</button>
+        <button type="button" class="confirm-accept" id="confirmAccept">Yes, mark as used</button>
+      </div>
+    </section>
+  </div>
+  <script src="{{ url_for('static', filename='landing.js') }}"></script><script src="{{ url_for('static', filename='app.js') }}"></script>
+<script>
+(()=>{const side=document.getElementById("appSidebar"),btn=document.getElementById("sidebarToggle");if(!side||!btn)return;const img=btn.querySelector("img");const set=collapsed=>{side.classList.toggle("collapsed",collapsed);document.body.classList.toggle("sidebar-collapsed",collapsed);btn.setAttribute("aria-label",collapsed?"Expand sidebar":"Collapse sidebar");btn.title=collapsed?"Expand sidebar":"Collapse sidebar";img.src=collapsed?"/static/arrow-expand.png":"/static/arrow-shrink.png";const logo=side.querySelector(".sidebar-logo");if(logo){const dark=document.body.dataset.theme==="dark";logo.src=collapsed?"/static/biteback-logo-small.png":(dark?"/static/biteback-logo-darkmode.png":"/static/biteback-logo.png");}try{localStorage.setItem("biteback-sidebar-collapsed",collapsed?"1":"0")}catch(e){}};set(localStorage.getItem("biteback-sidebar-collapsed")==="1");btn.addEventListener("click",()=>set(!side.classList.contains("collapsed")));})();
+</script></body>
+</html>
